@@ -1,0 +1,6 @@
+---
+- name: Create new user
+  user:
+    name: ubuntu
+    groups: adm,docker
+    append: yes

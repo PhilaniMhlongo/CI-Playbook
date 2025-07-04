@@ -1,0 +1,6 @@
+---
+- name: Deploy Jenkins
+  hosts: aws_ec2
+  become: true
+  roles:
+    - create_user
