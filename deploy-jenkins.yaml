@@ -5,3 +5,4 @@
   roles:
     - install_docker
     - create_user
+    - jenkins

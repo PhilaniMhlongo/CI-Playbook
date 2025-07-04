@@ -1,0 +1,3 @@
+jenkins_ports: "-p 8080:8080 -p 50000:50000"
+jenkins_volume: "-v jenkins_home:/var/jenkins_home"
+jenkins_image: "jenkins/jenkins:lts"

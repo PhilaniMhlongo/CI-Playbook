@@ -1,0 +1,39 @@
+---
+- name: Pull Jenkins Docker image
+  docker_image:
+    name: "{{ jenkins_image }}"
+    source: pull
+
+- name: Run Jenkins container
+  docker_container:
+    name: jenkins
+    image: "{{ jenkins_image }}"
+    state: started
+    published_ports:
+      - 8080:8080
+      - 50000:50000
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart_policy: unless-stopped
+
+- name: Wait for Jenkins to start on port 8080
+  wait_for:
+    port: 8080
+    delay: 10
+    timeout: 60
+
+- name: Get Jenkins container ID
+  command: docker ps -qf name=jenkins
+  register: container_id
+  changed_when: false
+
+- name: Get Jenkins initial admin password from container
+  command: >
+    docker exec {{ container_id.stdout }} cat /var/jenkins_home/secrets/initialAdminPassword
+  register: jenkins_password
+  changed_when: false
+
+- name: Show Jenkins initial admin password
+  debug:
+    msg: "Initial Jenkins Admin Password: {{ jenkins_password.stdout }}"
+
