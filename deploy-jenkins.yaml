@@ -3,4 +3,5 @@
   hosts: aws_ec2
   become: true
   roles:
+    - install_docker
     - create_user
