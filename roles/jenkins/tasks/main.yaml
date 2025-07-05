@@ -27,13 +27,40 @@
   register: container_id
   changed_when: false
 
+- name: Wait for Jenkins to generate initial admin password
+  shell: |
+    docker exec {{ container_id.stdout }} test -f /var/jenkins_home/secrets/initialAdminPassword
+  register: jenkins_password_ready
+  retries: 7
+  delay: 4
+  until: jenkins_password_ready.rc == 0
+  changed_when: false
+
+- name: Check if we already got the Jenkins initial password before
+  stat:
+    path: /tmp/jenkins_initial_password
+  register: password_file
+
 - name: Get Jenkins initial admin password from container
-  command: >
+  when: not password_file.stat.exists
+  shell: |
     docker exec {{ container_id.stdout }} cat /var/jenkins_home/secrets/initialAdminPassword
   register: jenkins_password
   changed_when: false
 
-- name: Show Jenkins initial admin password
-  debug:
-    msg: "Initial Jenkins Admin Password: {{ jenkins_password.stdout }}"
+- name: Store Jenkins initial admin password locally
+  when: not password_file.stat.exists
+  copy:
+    content: "{{ jenkins_password.stdout }}"
+    dest: /tmp/jenkins_initial_password
+    mode: '0600'
+
+
+# - name: Install maven inside Jenkins container
+#   command: docker exec {{ container_id.stdout }} apt-get update && apt-get install -y maven
+#   become: true
+
+# - name: Install docker inside Jenkins container
+#   command: docker exec {{ container_id.stdout }} apt-get update && apt-get install -y docker.io
+#   become: true
 
